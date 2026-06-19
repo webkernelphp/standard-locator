@@ -1,10 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "webkernel/standard-locator",
+    "name": "webkernel/standard-paths",
     "description": "Core environment path locator and configuration cache system for the Webkernel platform.",
     "version": "0.1.0",
     "homepage": "https://www.webkernelphp.com/",
-    "type": "composer-plugin",
+    "type": "library",
     "license": "EPL-2.0",
     "authors": [
         {
@@ -14,7 +14,7 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/webkernelphp/stdloc/issues"
+        "issues": "https://github.com/webkernelphp/standard-paths/issues"
     },
     "require": {
         "composer/composer": "^2.0",
@@ -27,11 +27,11 @@
     },
     "autoload": {
         "files": [
-            "load.stdloc.functions.php"
+            "load.standard-paths.functions.php"
         ],
         "classmap": [],
         "psr-4": {
-            "Webkernel\\StdLoc\\": "src/"
+            "Webkernel\\StdPaths\\": "src/"
         }
     },
     "scripts": {
@@ -40,19 +40,14 @@
         "test": "vendor/bin/phpunit"
     },
     "config": {
-        "sort-packages": true,
-        "platform": {
-            "php": "8.4.0"
-        }
+        "sort-packages": true
     },
     "extra": {
-        "class": "Webkernel\\StdLoc\\Composer\\Plugin",
         "webkernel": {
-            "split_repo": "git@github.com:webkernelphp/standard-locator.git",
-            "production": true,
+            "package_repo": "git@github.com:webkernelphp/standard-paths.git",
             "prefix": "standard"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

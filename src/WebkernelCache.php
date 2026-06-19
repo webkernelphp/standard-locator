@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-namespace Webkernel\StdLoc;
+namespace Webkernel\StdPaths;
 
 final class WebkernelCache
 {

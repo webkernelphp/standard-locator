@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
-
-namespace Webkernel\StdLoc;
+namespace Webkernel\StdPaths;
 
 use Composer\Config;
 use Composer\Json\JsonFile;

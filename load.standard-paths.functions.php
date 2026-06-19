@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
-// @package webkernel/stdloc/load.stdloc.functions.php
-use Webkernel\StdLoc\WebkernelComposer;
-use Webkernel\StdLoc\WebkernelRouter;
+// @package webkernel/standard-paths/load.standard-paths.functions.php
+use Webkernel\StdPaths\WebkernelComposer;
+use Webkernel\StdPaths\WebkernelRouter;
 
 /**
  * Real-ish paths without realpath()
@@ -43,8 +43,8 @@ if (!function_exists('project_root')) {
     }
 }
 
-if (!function_exists('application_path')) {
-    function application_path(?string $path = null): string
+if (!function_exists('webapp_path')) {
+    function webapp_path(?string $path = null): string
     {
         $root = WebkernelComposer::root();
         return $path ? $root . DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR) : $root;
