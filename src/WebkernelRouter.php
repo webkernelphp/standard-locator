@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
+
 namespace Webkernel\StdPaths;
+
+use Closure;
 
 /**
  * Minimal route registry and dispatcher for internal Webkernel endpoints.
@@ -40,10 +43,9 @@ final class WebkernelRouter
      * Register a route using an inline closure.
      *
      * @param string $pattern Pattern relative to PREFIX, e.g. "branding/{brand}/{key}"
-     * @param Closure(array<string,string>): never $closure
-     * @param $closure
+     * @param \Closure(array<string,string>): never $closure
      */
-    public static function registerClosure(string $pattern, Closure $closure): void
+    public static function registerClosure(string $pattern, \Closure $closure): void
     {
         self::register($pattern, new WebkernelClosureHandler($closure));
     }
@@ -159,10 +161,10 @@ final class WebkernelRouter
 final readonly class WebkernelClosureHandler implements WebkernelRouteHandler
 {
     /**
-     * @param Closure(array<string,string>): never $closure
+     * @param \Closure(array<string,string>): never $closure
      */
     public function __construct(
-        private Closure $closure,
+        private \Closure $closure,
     ) {
     }
 
@@ -171,7 +173,6 @@ final readonly class WebkernelClosureHandler implements WebkernelRouteHandler
         ($this->closure)($params);
     }
 }
-
 
 /**
  * Contract for a Webkernel route handler.

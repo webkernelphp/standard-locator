@@ -239,6 +239,15 @@ if (!function_exists('webkernel_cache_path')) {
 }
 
 // =============================================================================
+// COMPOSER_VENDOR_DIR Environment Variable Setup
+// Sets the value of the environment variable. Otherwise, Laravel's
+// PackageDiscoverCommand will create an empty array in
+// bootstrap/cache/packages.php.
+// =============================================================================
+
+putenv('COMPOSER_VENDOR_DIR=' . vendor_dir());
+
+// =============================================================================
 // Webkernel Router Bootstrap
 // Intercepts matching requests before the framework router runs.
 // Routes must be pre-registered via WebkernelRouter::register().
