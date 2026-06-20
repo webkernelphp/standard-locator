@@ -134,7 +134,7 @@ final class WebkernelRouter
             $names = [];
 
             $regex = preg_replace_callback(
-                '/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/',
+                '/\{([a-zA-Z_]\w*)\}/',
                 static function (array $m) use (&$names): string {
                     $names[] = $m[1];
                     return '(?P<' . $m[1] . '>[^/]+)';
@@ -156,13 +156,13 @@ final class WebkernelRouter
 /**
  * Adapts a Closure to WebkernelRouteHandler.
  */
-final class WebkernelClosureHandler implements WebkernelRouteHandler
+final readonly class WebkernelClosureHandler implements WebkernelRouteHandler
 {
     /**
      * @param Closure(array<string,string>): never $closure
      */
     public function __construct(
-        private readonly Closure $closure,
+        private Closure $closure,
     ) {
     }
 

@@ -27,9 +27,11 @@ final class WebkernelComposer
 
     private static ?\Composer\Composer $instance = null;
 
-    private const IMMUTABLE = ['name', 'type', 'license', '_readme'];
+    private const array IMMUTABLE = ['name', 'type', 'license', '_readme'];
 
-    private function __construct(private readonly string $root) {}
+    private function __construct()
+    {
+    }
 
     // -------------------------------------------------------------------------
     // Boot
@@ -37,7 +39,7 @@ final class WebkernelComposer
     public static function boot(string $cacheDir): void
     {
         WebkernelCache::useDirectory($cacheDir);
-        static::$cacheBooted = true;
+        self::$cacheBooted = true;
     }
 
     // -------------------------------------------------------------------------
@@ -45,9 +47,9 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function load(?string $root = null): static
     {
-        $root ??= static::root();
-        static::hydrate($root);
-        return new static($root);
+        $root ??= self::root();
+        self::hydrate($root);
+        return new self($root);
     }
 
     // -------------------------------------------------------------------------
@@ -55,8 +57,8 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function root(): string
     {
-        if (static::$resolvedRoot !== null) {
-            return static::$resolvedRoot;
+        if (self::$resolvedRoot !== null) {
+            return self::$resolvedRoot;
         }
 
         foreach (get_included_files() as $file) {
@@ -66,7 +68,7 @@ final class WebkernelComposer
             }
             $candidate = dirname(substr($file, 0, $pos));
             if (is_file($candidate . '/composer.json')) {
-                return static::$resolvedRoot = $candidate;
+                return self::$resolvedRoot = $candidate;
             }
         }
 
@@ -78,21 +80,21 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function vendorDir(): string
     {
-        if (static::$resolvedVendor !== null) {
-            return static::$resolvedVendor;
+        if (self::$resolvedVendor !== null) {
+            return self::$resolvedVendor;
         }
 
-        static::ensureBooted();
+        self::ensureBooted();
 
-        return static::$resolvedVendor = WebkernelCache::get(
+        return self::$resolvedVendor = WebkernelCache::get(
             '__composer.vendor-dir',
             static function (): string {
-                $root = static::root();
+                $root = self::root();
                 $cfg  = new Config(true, $root);
-                $cfg->merge(['config' => static::readRaw($root)['config'] ?? []]);
+                $cfg->merge(['config' => self::readRaw($root)['config'] ?? []]);
                 return $cfg->get('vendor-dir');
             },
-            static::root() . '/composer.json'
+            self::root() . '/composer.json'
         );
     }
 
@@ -101,21 +103,21 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function binDir(): string
     {
-        if (static::$resolvedBin !== null) {
-            return static::$resolvedBin;
+        if (self::$resolvedBin !== null) {
+            return self::$resolvedBin;
         }
 
-        static::ensureBooted();
+        self::ensureBooted();
 
-        return static::$resolvedBin = WebkernelCache::get(
+        return self::$resolvedBin = WebkernelCache::get(
             '__composer.bin-dir',
             static function (): string {
-                $root = static::root();
+                $root = self::root();
                 $cfg  = new Config(true, $root);
-                $cfg->merge(['config' => static::readRaw($root)['config'] ?? []]);
+                $cfg->merge(['config' => self::readRaw($root)['config'] ?? []]);
                 return $cfg->get('bin-dir');
             },
-            static::root() . '/composer.json'
+            self::root() . '/composer.json'
         );
     }
 
@@ -124,13 +126,13 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function autoloadFile(): string
     {
-        return static::vendorDir() . '/autoload.php';
+        return self::vendorDir() . '/autoload.php';
     }
 
     public static function requireAutoload(): void
     {
         if (!class_exists(\Composer\Autoload\ClassLoader::class, false)) {
-            require static::autoloadFile();
+            require self::autoloadFile();
         }
     }
 
@@ -139,34 +141,32 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function instance(): \Composer\Composer
     {
-        return static::$instance ??= Factory::create(new NullIO());
+        return self::$instance ??= Factory::create(new NullIO());
     }
 
     // -------------------------------------------------------------------------
     // Installed packages — static-cached after first read
     // -------------------------------------------------------------------------
     /**
-     * @param  string|null $type
-     * @param  string|null $vendor
      * @return array<int,array{name:string,version:string,type:string,description:string}>
      */
     public static function installedPackages(?string $type = null, ?string $vendor = null): array
     {
-        if (static::$installedData === null) {
-            $installedJson = static::vendorDir() . '/composer/installed.json';
+        if (self::$installedData === null) {
+            $installedJson = self::vendorDir() . '/composer/installed.json';
             if (!is_file($installedJson)) {
                 return [];
             }
             $raw = json_decode((string) file_get_contents($installedJson), true, 512, JSON_THROW_ON_ERROR);
-            static::$installedData = $raw['packages'] ?? $raw;
+            self::$installedData = $raw['packages'] ?? $raw;
         }
 
         if ($type === null && $vendor === null) {
-            return static::$installedData;
+            return self::$installedData;
         }
 
         $result = [];
-        foreach (static::$installedData as $pkg) {
+        foreach (self::$installedData as $pkg) {
             $name = $pkg['name'] ?? '';
             if ($vendor !== null && !str_starts_with($name, $vendor . '/')) {
                 continue;
@@ -190,13 +190,13 @@ final class WebkernelComposer
     /** @return array<string,mixed> */
     public static function authRead(): array
     {
-        $path = static::root() . '/auth.json';
+        $path = self::root() . '/auth.json';
         return is_file($path) ? (new JsonFile($path))->read() : [];
     }
 
     public static function authSet(string $method, string $host, mixed $value): void
     {
-        $path = static::root() . '/auth.json';
+        $path = self::root() . '/auth.json';
         $auth = is_file($path) ? (new JsonFile($path))->read() : [];
         $auth[$method][$host] = $value;
         (new JsonFile($path))->write($auth);
@@ -204,7 +204,7 @@ final class WebkernelComposer
 
     public static function authForget(string $method, string $host): void
     {
-        $path = static::root() . '/auth.json';
+        $path = self::root() . '/auth.json';
         if (!is_file($path)) {
             return;
         }
@@ -218,12 +218,12 @@ final class WebkernelComposer
 
     public static function authBearer(string $host, string $token): void
     {
-        static::authSet('bearer', $host, $token);
+        self::authSet('bearer', $host, $token);
     }
 
     public static function authBasic(string $host, string $username, string $password): void
     {
-        static::authSet('http-basic', $host, ['username' => $username, 'password' => $password]);
+        self::authSet('http-basic', $host, ['username' => $username, 'password' => $password]);
     }
 
     // -------------------------------------------------------------------------
@@ -231,11 +231,11 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public function get(string $key, mixed $default = null): mixed
     {
-        return static::dotGet(static::$data ?? [], $key, $default);
+        return $this->dotGet(self::$data ?? [], $key, $default);
     }
 
     /** @return array<string,mixed> */
-    public function all(): array { return static::$data ?? []; }
+    public function all(): array { return self::$data ?? []; }
 
     public function set(string $key, mixed $value): static
     {
@@ -244,7 +244,7 @@ final class WebkernelComposer
             throw new \InvalidArgumentException("Key [{$top}] is immutable.");
         }
 
-        $path = static::root() . '/composer.json';
+        $path = self::root() . '/composer.json';
         $raw  = file_get_contents($path);
         if ($raw === false) {
             throw new \RuntimeException("Cannot read [{$path}].");
@@ -257,7 +257,7 @@ final class WebkernelComposer
             : $m->addMainKey($key, $value);
 
         file_put_contents($path, $m->getContents(), LOCK_EX);
-        static::bust();
+        self::bust();
         return $this;
     }
 
@@ -295,13 +295,13 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     public static function flush(): void
     {
-        static::bust();
-        static::$resolvedRoot   = null;
-        static::$resolvedVendor = null;
-        static::$resolvedBin    = null;
-        static::$installedData  = null;
-        static::$cacheBooted    = false;
-        static::$instance       = null;
+        self::bust();
+        self::$resolvedRoot   = null;
+        self::$resolvedVendor = null;
+        self::$resolvedBin    = null;
+        self::$installedData  = null;
+        self::$cacheBooted    = false;
+        self::$instance       = null;
         WebkernelCache::flush();
     }
 
@@ -310,11 +310,11 @@ final class WebkernelComposer
     // -------------------------------------------------------------------------
     private static function ensureBooted(): void
     {
-        if (static::$cacheBooted) {
+        if (self::$cacheBooted) {
             return;
         }
 
-        $root     = static::root();
+        $root     = self::root();
         $cacheDir = $root . DIRECTORY_SEPARATOR . 'storage/frame' . DIRECTORY_SEPARATOR . '_tmp';
 
         if (!is_dir($cacheDir)) {
@@ -323,7 +323,7 @@ final class WebkernelComposer
             umask($prev);
         }
 
-        static::boot($cacheDir);
+        self::boot($cacheDir);
     }
 
     /** @return array<string,mixed> */
@@ -334,29 +334,29 @@ final class WebkernelComposer
         if ($mtime === false) {
             throw new \RuntimeException("Cannot stat [{$path}].");
         }
-        if (static::$data !== null && static::$mtime === $mtime) {
-            return static::$data;
+        if (self::$data !== null && self::$mtime === $mtime) {
+            return self::$data;
         }
-        static::$data  = (new JsonFile($path))->read();
-        static::$mtime = $mtime;
-        return static::$data;
+        self::$data  = (new JsonFile($path))->read();
+        self::$mtime = $mtime;
+        return self::$data;
     }
 
-    private static function hydrate(string $root): void { static::readRaw($root); }
+    private static function hydrate(string $root): void { self::readRaw($root); }
 
     private static function bust(): void
     {
-        static::$data           = null;
-        static::$mtime          = null;
-        static::$resolvedVendor = null;
-        static::$resolvedBin    = null;
-        static::$installedData  = null;
+        self::$data           = null;
+        self::$mtime          = null;
+        self::$resolvedVendor = null;
+        self::$resolvedBin    = null;
+        self::$installedData  = null;
         WebkernelCache::forget('__composer.vendor-dir');
         WebkernelCache::forget('__composer.bin-dir');
     }
 
     /** @param array<string,mixed> $data */
-    private static function dotGet(array $data, string $key, mixed $default): mixed
+    private function dotGet(array $data, string $key, mixed $default): mixed
     {
         foreach (explode('.', $key) as $segment) {
             if (!is_array($data) || !array_key_exists($segment, $data)) {
