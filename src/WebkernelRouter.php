@@ -12,7 +12,8 @@ use Closure;
  * an indexed regex map, and matched in a single pass per request.
  *
  * No framework dependency. The dispatcher must run after all routes are
- * registered; see std-functions/functions.php for the correct call site.
+ * registered; it is invoked from public/index.php immediately after the
+ * Composer autoloader (so all package "files" autoloaders have executed).
  */
 final class WebkernelRouter
 {

@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 // @package webkernel/standard-paths/load.standard-paths.functions.php
 use Webkernel\StdPaths\WebkernelComposer;
-use Webkernel\StdPaths\WebkernelRouter;
 
 /**
  * Real-ish paths without realpath()
@@ -248,11 +247,9 @@ if (!function_exists('webkernel_cache_path')) {
 putenv('COMPOSER_VENDOR_DIR=' . vendor_dir());
 
 // =============================================================================
-// Webkernel Router Bootstrap
-// Intercepts matching requests before the framework router runs.
-// Routes must be pre-registered via WebkernelRouter::register().
+// Webkernel Router
+// Early dispatch for /__webkernel-app/* happens in public/index.php *after*
+// the full autoloader (all "files" entries) so registrations from packages
+// like standard-pix are guaranteed to have executed.
+// See WebkernelRouter::dispatch().
 // =============================================================================
-
-if (php_sapi_name() !== 'cli' && WebkernelRouter::isWebkernelRequest()) {
-    WebkernelRouter::dispatch();
-}
